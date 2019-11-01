@@ -76,7 +76,7 @@ Finally it provides a close method that:
 ```js
 const express = require('express')
 const someDb = require('some-db');
-const fireAndForgetter = require('fire-and-forgetter');
+const fireAndForgetter = require('fire-and-forgetter').default;
 const app = express();
 
 (async function main() {
