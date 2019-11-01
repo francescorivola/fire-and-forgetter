@@ -1,6 +1,6 @@
 {
   "name": "fire-and-forgetter",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A simple lib to handle fire and forget operations.",
   "main": "build/index.js",
   "scripts": {
@@ -24,7 +24,6 @@
   "homepage": "https://github.com/francescorivola/fire-and-forgetter#readme",
   "devDependencies": {
     "@types/jest": "^24.0.21",
-    "@types/node": "^12.12.4",
     "@types/node": "^12.12.3",
     "codecov": "^3.6.1",
     "jest": "^24.9.0",
