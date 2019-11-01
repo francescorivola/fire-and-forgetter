@@ -60,6 +60,7 @@ const app = express();
     process.exit(1);
 });
 ```
+Note: this example is a simplified version of real code, the someDb is a fake package and I haven't execute this code.
 
 ## The Solution
 
