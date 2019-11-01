@@ -1,0 +1,32 @@
+{
+  "name": "fire-and-forgetter",
+  "version": "0.0.1",
+  "description": "A simple lib to handle fire and forget operations.",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "jest --watchAll",
+    "test-ci": "jest",
+    "build": "tsc -p tsconfig.json",
+    "build-watch": "tsc -p tsconfig.json --watch",
+    "tslint": "tslint -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/francescorivola/fire-and-forgetter.git"
+  },
+  "keywords": [
+    "fire-and-forget",
+    "lib"
+  ],
+  "author": "francescorivola",
+  "license": "MIT",
+  "homepage": "https://github.com/francescorivola/fire-and-forgetter#readme",
+  "devDependencies": {
+    "@types/jest": "^24.0.21",
+    "@types/node": "^12.12.3",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.4"
+  }
+}
