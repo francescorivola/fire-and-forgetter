@@ -61,6 +61,11 @@ describe("fire-and-forgetter", () => {
         }
     });
 
+    it("close should resolve when no fire and forget operations are in process", async () => {
+        const fireAndForget = fireAndForgetter();
+        await expect(fireAndForget.close()).resolves;
+    });
+
     it("fireAndForget should call onError callback when operation rejects", async () => {
         expect.assertions(2);
         const fireAndForget = fireAndForgetter();
