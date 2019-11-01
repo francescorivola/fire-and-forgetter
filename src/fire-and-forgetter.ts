@@ -2,17 +2,15 @@ import { createCounter } from "./counter";
 import ClosingError from "./errors/closing-error";
 import TimeoutClosingError from "./errors/timeout-closing-error";
 
-export function fireAndForgetter() {
+export function fireAndForgetter(options = {
+    // tslint:disable-next-line: no-console
+    defaultOnError: (error) => console.error(error),
+}) {
 
     const counter = createCounter();
     let closing = false;
 
-    function defaultOnError(error: Error) {
-        // tslint:disable-next-line: no-console
-        console.error(error);
-    }
-
-    function fireAndForget(func: () => Promise<void>, onError: (error: Error) => void = defaultOnError): void {
+    function fireAndForget(func: () => Promise<void>, onError: (error: Error) => void = options.defaultOnError): void {
         if (closing) {
             throw new ClosingError("Cannot longer execute fire and forget operation as is closing or closed");
         }

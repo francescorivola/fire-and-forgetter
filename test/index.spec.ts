@@ -1,6 +1,9 @@
-import fireAndForgetter from "../src/index";
-import TimeoutClosingError from "../src/errors/timeout-closing-error";
 import ClosingError from "../src/errors/closing-error";
+import TimeoutClosingError from "../src/errors/timeout-closing-error";
+import fireAndForgetter from "../src/index";
+
+// tslint:disable-next-line: no-console
+console.error = jest.fn();
 
 describe("fire-and-forgetter", () => {
 
@@ -81,6 +84,27 @@ describe("fire-and-forgetter", () => {
             expect(error instanceof Error).toBe(true);
             expect(error.message).toBe("ups, some error happened");
         });
+
+        await fireAndForget.close();
+    });
+
+    it("fireAndForget should call defaultOnError callback when operation rejects and no onError callback is set", async () => {
+        expect.assertions(2);
+        const fireAndForget = fireAndForgetter({
+            defaultOnError: (error) => {
+                expect(error instanceof Error).toBe(true);
+                expect(error.message).toBe("ups, some error happened");
+            },
+        });
+
+        function doSumeSuffAndReject() {
+            return new Promise<void>(async (resolve, reject) => {
+                await wait(10);
+                reject(new Error("ups, some error happened"));
+            });
+        }
+
+        fireAndForget(() => doSumeSuffAndReject());
 
         await fireAndForget.close();
     });
