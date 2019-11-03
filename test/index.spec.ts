@@ -56,7 +56,7 @@ describe("fire-and-forgetter", () => {
         fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
 
         try {
-            await fireAndForget.close(10);
+            await fireAndForget.close({ timeout: 10 });
         } catch (error) {
             expect(error instanceof TimeoutClosingError).toBe(true);
             expect(error.message).toBe("Cannot close after 10ms, 3 fire and forget operations are still in progress");
