@@ -16,7 +16,7 @@ $ npm install fire-and-forgetter --save
 
 ## The Problem
 
-In NodeJs applications that perform fire and forget operations it comes up the need to know and wait until all those fire and forget operations completes in order to perform a graceful application shutdown.
+In NodeJs applications performing fire and forget operations it comes up the need a way to wait until all those operations complete in order to perform a graceful application shutdown.
 
 Also, fire and forget operations must be always followed by a catch in order to avoid `'unhandledRejection'`.
 
@@ -38,6 +38,8 @@ const app = express();
     async function process(payload) {
         
         // do some stuff that could take several milliseconds
+        // i.e interact with another service, I/O operations, etc..
+        // then finally we persist the payload.
 
         await db.insert(payload);
     }
@@ -64,13 +66,13 @@ Note: this example is a simplified version of real code, the someDb is a fake pa
 
 ## The Solution
 
-Fire and forgetter provides a tiny library to keep the state of fire and forget operations. 
+Fire and forgetter is a tiny library to keep the state of fire and forget operations. 
 
 It ensures that a catch is always added to these operations. 
 
 Finally it provides a close method that:
-1) throws a ClosingError if new fire and forget are requested
-2) resolves when all pending fire and forget operations have been fullfilled or rejected
+1) resolves when all pending fire and forget operations have been fullfilled or rejected
+2) mark the instance as closed so no new fire an forget operations can be executed. 
 
 ### Example with Express
 ```js
@@ -92,6 +94,8 @@ const app = express();
     async function process(payload) {
         
         // do some stuff that could take several milliseconds
+        // i.e interact with another service, I/O operations, etc..
+        // then finally we persist the payload.
 
         await db.insert(payload);
     }
