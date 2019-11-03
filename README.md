@@ -16,9 +16,9 @@ $ npm install fire-and-forgetter --save
 
 ## The Problem
 
-In NodeJs applications performing fire and forget operations it comes up the need a way to wait until all those operations complete in order to perform a graceful application shutdown.
+In NodeJs applications performing fire and forget operations we need a way to wait until all those operations complete in order to perform a graceful application shutdown.
 
-Also, fire and forget operations must be always followed by a catch in order to avoid `'unhandledRejection'`.
+Also, fire and forget operations must have proper error handling in order to avoid `'unhandledRejection'`.
 
 ### Example with Express
 ```js
