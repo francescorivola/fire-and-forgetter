@@ -17,7 +17,7 @@ jobs:
           node-version: 12
       - run: npm ci
       - run: npm run build
-      - run: npm run tslint
+      - run: npm run lint
       - run: npm run test-ci
       - run: npm run publish-code-coverage
         env:

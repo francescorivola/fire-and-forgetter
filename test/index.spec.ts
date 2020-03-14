@@ -2,29 +2,29 @@ import ClosingError from "../src/errors/closing-error";
 import TimeoutClosingError from "../src/errors/timeout-closing-error";
 import fireAndForgetter from "../src/index";
 
-// tslint:disable-next-line: no-console
 console.error = jest.fn();
 
-describe("fire-and-forgetter", () => {
+function wait(time: number): Promise<void> {
+    return new Promise<void>((resolve) => setTimeout(resolve, time));
+}
 
+describe("fire-and-forgetter", () => {
+    
     it("close should wait until all fire and forget operations have been fullfilled or rejected", async () => {
         const fireAndForget = fireAndForgetter();
 
         let count = 0;
 
-        function doSumeSuffAndIncrementCountAtTheEnd() {
-            return new Promise<void>(async (resolve) => {
-                await wait(10);
-                count++;
-                resolve();
-            });
+        async function doSumeSuffAndIncrementCountAtTheEnd(): Promise<void> {
+            await wait(10);
+            count++;
+            return Promise.resolve();
         }
-        function doSumeSuffAndIncrementCountAtTheEndAndReject() {
-            return new Promise<void>(async (resolve, reject) => {
-                await wait(10);
-                count++;
-                reject(new Error("ups, some error happened"));
-            });
+
+        async function doSumeSuffAndIncrementCountAtTheEndAndReject(): Promise<void> {
+            await wait(10);
+            count++;
+            return Promise.reject(new Error("ups, some error happened"));
         }
 
         fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
@@ -43,12 +43,10 @@ describe("fire-and-forgetter", () => {
 
         let count = 0;
 
-        function doSumeSuffAndIncrementCountAtTheEnd() {
-            return new Promise<void>(async (resolve) => {
-                await wait(1000);
-                count++;
-                resolve();
-            });
+        async function doSumeSuffAndIncrementCountAtTheEnd(): Promise<void> {
+            await wait(1000);
+            count++;
+            return Promise.resolve();
         }
 
         fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
@@ -73,11 +71,9 @@ describe("fire-and-forgetter", () => {
         expect.assertions(2);
         const fireAndForget = fireAndForgetter();
 
-        function doSumeSuffAndReject() {
-            return new Promise<void>(async (resolve, reject) => {
-                await wait(10);
-                reject(new Error("ups, some error happened"));
-            });
+        async function doSumeSuffAndReject(): Promise<void> {
+            await wait(10);
+            return Promise.reject(new Error("ups, some error happened"));
         }
 
         fireAndForget(() => doSumeSuffAndReject(), (error) => {
@@ -97,11 +93,9 @@ describe("fire-and-forgetter", () => {
             },
         });
 
-        function doSumeSuffAndReject() {
-            return new Promise<void>(async (resolve, reject) => {
-                await wait(10);
-                reject(new Error("ups, some error happened"));
-            });
+        async function doSumeSuffAndReject(): Promise<void> {
+            await wait(10);
+            return Promise.reject(new Error("ups, some error happened"));
         }
 
         fireAndForget(() => doSumeSuffAndReject());
@@ -113,11 +107,9 @@ describe("fire-and-forgetter", () => {
         expect.assertions(2);
         const fireAndForget = fireAndForgetter();
 
-        function doSumeSuffAndIncrementCountAtTheEnd() {
-            return new Promise<void>(async (resolve) => {
-                await wait(100);
-                resolve();
-            });
+        async function doSumeSuffAndIncrementCountAtTheEnd(): Promise<void> {
+            await wait(100);
+            return Promise.resolve();
         }
 
         fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
@@ -131,8 +123,4 @@ describe("fire-and-forgetter", () => {
             expect(error.message).toBe("Cannot longer execute fire and forget operation as is closing or closed");
         }
     });
-
-    function wait(time: number) {
-        return new Promise<void>((resolve) => setTimeout(resolve, time));
-    }
 });

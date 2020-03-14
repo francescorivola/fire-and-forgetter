@@ -2,6 +2,22 @@ import { createCounter } from "./counter";
 import ClosingError from "./errors/closing-error";
 import TimeoutClosingError from "./errors/timeout-closing-error";
 
+type Options = {
+    defaultOnError: (error: Error) => void;
+};
+
+type FireAndForgetter = {
+    close: (options?: CloseOptions) => Promise<void>;
+} & ((func: () => Promise<void>, onError?: (error: Error) => void) => void);
+
+type CloseOptions = {
+    timeout: number;
+}
+
+const defaultOptions: Options = {
+    defaultOnError: (error) => console.error(error),
+}
+
 /**
  * Get a new instance of the fire and forgetter lib.
  *
@@ -11,13 +27,19 @@ import TimeoutClosingError from "./errors/timeout-closing-error";
  * }]
  * @returns a fire and forgetter object instance.
  */
-export function fireAndForgetter(options = {
-    // tslint:disable-next-line: no-console
-    defaultOnError: (error) => console.error(error),
-}) {
+export function fireAndForgetter(options: Options = defaultOptions): FireAndForgetter {
 
     const counter = createCounter();
     let closing = false;
+
+    async function executeFireAndForget(func: () => Promise<void>): Promise<void> {
+        try {
+            counter.incrementCounter();
+            await func();
+        } finally {
+            counter.decrementCounter();
+        }
+    }
 
     /**
      * Execute a function in fire and forget mode.
@@ -44,7 +66,7 @@ export function fireAndForgetter(options = {
      * @returns {Promise<void>}
      * @throws {TimeoutClosingError} when fire and forget operations do not complete before the set timeout.
      */
-    function close(closeOptions: { timeout: number } = { timeout: 0 }): Promise<void> {
+    function close(closeOptions: CloseOptions = { timeout: 0 }): Promise<void> {
         closing = true;
         return new Promise((resolve, reject) => {
             if (counter.getCount() === 0) {
@@ -63,15 +85,6 @@ export function fireAndForgetter(options = {
         });
     }
     fireAndForget.close = close;
-
-    async function executeFireAndForget(func: () => Promise<void>): Promise<void> {
-        try {
-            counter.incrementCounter();
-            await func();
-        } finally {
-            counter.decrementCounter();
-        }
-    }
 
     return fireAndForget;
 }

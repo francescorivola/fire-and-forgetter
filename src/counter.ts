@@ -1,23 +1,30 @@
 import { EventEmitter } from "events";
 
-export function createCounter() {
+type Counter = {
+    incrementCounter: () => void;
+    decrementCounter: () => void;
+    getCount: () => number;
+    registerSubscriberToCounterChanges(callback: (count: number) => void): void;
+}
+
+export function createCounter(): Counter {
 
     const eventEmitter: EventEmitter = new EventEmitter();
-    let count: number = 0;
+    let count = 0;
 
     return {
-        incrementCounter() {
+        incrementCounter(): void {
             count++;
             eventEmitter.emit("counterUpdate", count);
         },
-        decrementCounter() {
+        decrementCounter(): void {
             count--;
             eventEmitter.emit("counterUpdate", count);
         },
-        getCount() {
+        getCount(): number {
             return count;
         },
-        registerSubscriberToCounterChanges(callback: (count: number) => void) {
+        registerSubscriberToCounterChanges(callback: (count: number) => void): void {
             eventEmitter.on("counterUpdate", callback);
         },
     };
