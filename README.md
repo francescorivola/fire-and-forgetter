@@ -5,7 +5,7 @@ Simple lib to handle fire and forget operations.
 [![Actions Status](https://github.com/francescorivola/fire-and-forgetter/workflows/Node%20CI/badge.svg)](https://github.com/francescorivola/fire-and-forgetter/actions)
 [![CodeFactor](https://www.codefactor.io/repository/github/francescorivola/fire-and-forgetter/badge)](https://www.codefactor.io/repository/github/francescorivola/fire-and-forgetter)
 [![codecov](https://codecov.io/gh/francescorivola/fire-and-forgetter/branch/master/graph/badge.svg)](https://codecov.io/gh/francescorivola/fire-and-forgetter) 
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=francescorivola/fire-and-forgetter)](https://dependabot.com)
+[![Dependabot](https://badgen.net/badge/Dependabot/enabled/green?icon=dependabot)](https://dependabot.com/)
 
 
 ## Installation
