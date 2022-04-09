@@ -68,7 +68,7 @@ export function fireAndForgetter(options: Options = defaultOptions): FireAndForg
      */
     function close(closeOptions: CloseOptions = { timeout: 0 }): Promise<void> {
         closing = true;
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             if (counter.getCount() === 0) {
                 resolve();
                 return;

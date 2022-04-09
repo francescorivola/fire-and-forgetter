@@ -57,7 +57,7 @@ describe("fire-and-forgetter", () => {
             await fireAndForget.close({ timeout: 10 });
         } catch (error) {
             expect(error instanceof TimeoutClosingError).toBe(true);
-            expect(error.message).toBe("Cannot close after 10ms, 3 fire and forget operations are still in progress");
+            expect((error as Error).message).toBe("Cannot close after 10ms, 3 fire and forget operations are still in progress");
             expect(count).toBe(0);
         }
     });
@@ -78,7 +78,7 @@ describe("fire-and-forgetter", () => {
 
         fireAndForget(() => doSumeSuffAndReject(), (error) => {
             expect(error instanceof Error).toBe(true);
-            expect(error.message).toBe("ups, some error happened");
+            expect((error as Error).message).toBe("ups, some error happened");
         });
 
         await fireAndForget.close();
@@ -120,7 +120,7 @@ describe("fire-and-forgetter", () => {
             fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
         } catch (error) {
             expect(error instanceof ClosingError).toBe(true);
-            expect(error.message).toBe("Cannot longer execute fire and forget operation as is closing or closed");
+            expect((error as Error).message).toBe("Cannot longer execute fire and forget operation as is closing or closed");
         }
     });
 });
