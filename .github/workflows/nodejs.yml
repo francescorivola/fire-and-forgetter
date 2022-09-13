@@ -21,15 +21,18 @@ jobs:
     - run: npm run build
     - run: npm run lint
     - run: npm run test-ci
-    - run: npm run publish-code-coverage
-      env:
-        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-        CI: true
+
+    - name: Publish Code Coverage
+      if: github.ref == 'refs/heads/master'
+      uses: codecov/codecov-action@v1
 
   automerge:
     needs: build
     runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: write
+
     steps:
-      - uses: fastify/github-action-merge-dependabot@v2.2.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: fastify/github-action-merge-dependabot@v3.3.1
