@@ -68,10 +68,10 @@ Note: this example is a simplified version of real code, the someDb is a fake pa
 
 Fire and forgetter is a tiny library to keep the state of fire and forget operations. 
 
-It ensures that a catch is always added to these operations. 
+It ensures that a catch is always added to these operations (to avoid any Unhandled Promise Rejections that could lead in memory leaks). 
 
 Finally it provides a close method that:
-1) resolves when all pending fire and forget operations have been fullfilled or rejected
+1) resolves when all pending fire and forget operations have been fulfilled or rejected
 2) mark the instance as closed so no new fire an forget operations can be executed. 
 
 ### Example with Express
