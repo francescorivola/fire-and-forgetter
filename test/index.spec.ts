@@ -1,126 +1,133 @@
 import ClosingError from "../src/errors/closing-error";
 import TimeoutClosingError from "../src/errors/timeout-closing-error";
 import fireAndForgetter from "../src/index";
+import { describe, test, mock } from "node:test";
+import { equal } from "assert/strict";
+import { setTimeout } from "timers/promises";
 
-console.error = jest.fn();
-
-function wait(time: number): Promise<void> {
-    return new Promise<void>((resolve) => setTimeout(resolve, time));
-}
+console.error = mock.fn();
 
 describe("fire-and-forgetter", () => {
-    
-    it("close should wait until all fire and forget operations have been fullfilled or rejected", async () => {
-        const fireAndForget = fireAndForgetter();
+  test("close should wait until all fire and forget operations have been fulfilled or rejected", async () => {
+    const fireAndForget = fireAndForgetter();
 
-        let count = 0;
+    let count = 0;
 
-        async function doSumeSuffAndIncrementCountAtTheEnd(): Promise<void> {
-            await wait(10);
-            count++;
-            return Promise.resolve();
-        }
+    async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
+      await setTimeout(10);
+      count++;
+      return Promise.resolve();
+    }
 
-        async function doSumeSuffAndIncrementCountAtTheEndAndReject(): Promise<void> {
-            await wait(10);
-            count++;
-            return Promise.reject(new Error("ups, some error happened"));
-        }
+    async function doSomeStuffsAndIncrementCountAtTheEndAndReject(): Promise<
+      void
+    > {
+      await setTimeout(10);
+      count++;
+      return Promise.reject(new Error("ups, some error happened"));
+    }
 
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEndAndReject());
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEndAndReject());
 
-        await fireAndForget.close();
+    await fireAndForget.close();
 
-        expect(count).toBe(4);
+    equal(count, 4);
+  });
+
+  test("close should throw a timeout closing error if timeout is reached and fire and forget operation are still in process", async () => {
+    const fireAndForget = fireAndForgetter();
+
+    let count = 0;
+
+    async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
+      await setTimeout(1000);
+      count++;
+      return Promise.resolve();
+    }
+
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+
+    try {
+      await fireAndForget.close({ timeout: 10 });
+      throw new Error("It should not get here");
+    } catch (error) {
+      equal(error instanceof TimeoutClosingError, true);
+      equal(
+        (error as Error).message,
+        "Cannot close after 10ms, 3 fire and forget operations are still in progress"
+      );
+      equal(count, 0);
+    }
+  });
+
+  test("close should resolve when no fire and forget operations are in process", async () => {
+    const fireAndForget = fireAndForgetter();
+    await fireAndForget.close();
+  });
+
+  test("fireAndForget should call onError callback when operation rejects", async () => {
+    const fireAndForget = fireAndForgetter();
+
+    async function doSomeStuffsAndReject(): Promise<void> {
+      await setTimeout(10);
+      return Promise.reject(new Error("ups, some error happened"));
+    }
+
+    fireAndForget(
+      () => doSomeStuffsAndReject(),
+      error => {
+        equal(error instanceof Error, true);
+        equal((error as Error).message, "ups, some error happened");
+      }
+    );
+
+    await fireAndForget.close();
+  });
+
+  test("fireAndForget should call defaultOnError callback when operation rejects and no onError callback is set", async () => {
+    const fireAndForget = fireAndForgetter({
+      defaultOnError: error => {
+        equal(error instanceof Error, true);
+        equal(error.message, "ups, some error happened");
+      }
     });
 
-    it("close should throw a timeout closing error if timeout is reached and fire and forget operation are still in process", async () => {
-        expect.assertions(3);
-        const fireAndForget = fireAndForgetter();
+    async function doSomeStuffsAndReject(): Promise<void> {
+      await setTimeout(10);
+      return Promise.reject(new Error("ups, some error happened"));
+    }
 
-        let count = 0;
+    fireAndForget(() => doSomeStuffsAndReject());
 
-        async function doSumeSuffAndIncrementCountAtTheEnd(): Promise<void> {
-            await wait(1000);
-            count++;
-            return Promise.resolve();
-        }
+    await fireAndForget.close();
+  });
 
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
+  test("fireAndForget should throw a closing error if fire and forget has been closed", async () => {
+    const fireAndForget = fireAndForgetter();
 
-        try {
-            await fireAndForget.close({ timeout: 10 });
-        } catch (error) {
-            expect(error instanceof TimeoutClosingError).toBe(true);
-            expect((error as Error).message).toBe("Cannot close after 10ms, 3 fire and forget operations are still in progress");
-            expect(count).toBe(0);
-        }
-    });
+    async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
+      await setTimeout(100);
+      return Promise.resolve();
+    }
 
-    it("close should resolve when no fire and forget operations are in process", async () => {
-        const fireAndForget = fireAndForgetter();
-        await expect(fireAndForget.close()).resolves;
-    });
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
 
-    it("fireAndForget should call onError callback when operation rejects", async () => {
-        expect.assertions(2);
-        const fireAndForget = fireAndForgetter();
+    fireAndForget.close();
 
-        async function doSumeSuffAndReject(): Promise<void> {
-            await wait(10);
-            return Promise.reject(new Error("ups, some error happened"));
-        }
-
-        fireAndForget(() => doSumeSuffAndReject(), (error) => {
-            expect(error instanceof Error).toBe(true);
-            expect((error as Error).message).toBe("ups, some error happened");
-        });
-
-        await fireAndForget.close();
-    });
-
-    it("fireAndForget should call defaultOnError callback when operation rejects and no onError callback is set", async () => {
-        expect.assertions(2);
-        const fireAndForget = fireAndForgetter({
-            defaultOnError: (error) => {
-                expect(error instanceof Error).toBe(true);
-                expect(error.message).toBe("ups, some error happened");
-            },
-        });
-
-        async function doSumeSuffAndReject(): Promise<void> {
-            await wait(10);
-            return Promise.reject(new Error("ups, some error happened"));
-        }
-
-        fireAndForget(() => doSumeSuffAndReject());
-
-        await fireAndForget.close();
-    });
-
-    it("fireAndForget should throw a closing error if fire and forget has been closed", async () => {
-        expect.assertions(2);
-        const fireAndForget = fireAndForgetter();
-
-        async function doSumeSuffAndIncrementCountAtTheEnd(): Promise<void> {
-            await wait(100);
-            return Promise.resolve();
-        }
-
-        fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-
-        fireAndForget.close();
-
-        try {
-            fireAndForget(() => doSumeSuffAndIncrementCountAtTheEnd());
-        } catch (error) {
-            expect(error instanceof ClosingError).toBe(true);
-            expect((error as Error).message).toBe("Cannot longer execute fire and forget operation as is closing or closed");
-        }
-    });
+    try {
+      fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+      throw new Error("It should not get here");
+    } catch (error) {
+      equal(error instanceof ClosingError, true);
+      equal(
+        (error as Error).message,
+        "Cannot longer execute fire and forget operation as is closing or closed"
+      );
+    }
+  });
 });
