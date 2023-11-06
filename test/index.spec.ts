@@ -98,6 +98,7 @@ describe("fire-and-forgetter", () => {
         equal(error.message, "ups, some error happened");
         defaultOnErrorHasBeenCalled = true;
       },
+      throwOnClosing: true,
     });
 
     async function doSomeStuffsAndReject(): Promise<void> {
@@ -137,5 +138,32 @@ describe("fire-and-forgetter", () => {
     }
 
     equal(functionHasThrownError, true);
+  });
+
+  test("fireAndForget should not throw a closing error if option throwOnClosing is set to false", async () => {
+    let reportedError;
+    const fireAndForget = fireAndForgetter({
+      throwOnClosing: false,
+      defaultOnError: (error) => {
+        reportedError = error;
+      },
+    });
+
+    async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
+      await setTimeout(100);
+      return Promise.resolve();
+    }
+
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+
+    fireAndForget.close();
+
+    fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
+
+    equal(reportedError instanceof ClosingError, true);
+    equal(
+      (reportedError as Error).message,
+      "Cannot longer execute fire and forget operation as is closing or closed"
+    );
   });
 });

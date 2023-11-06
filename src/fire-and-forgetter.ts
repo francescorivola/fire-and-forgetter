@@ -4,6 +4,7 @@ import TimeoutClosingError from "./errors/timeout-closing-error";
 
 type Options = {
   defaultOnError: (error: Error) => void;
+  throwOnClosing: boolean;
 };
 
 type FireAndForgetter = {
@@ -16,6 +17,7 @@ type CloseOptions = {
 
 const defaultOptions: Options = {
   defaultOnError: (error) => console.error(error),
+  throwOnClosing: true,
 };
 
 /**
@@ -24,6 +26,7 @@ const defaultOptions: Options = {
  * @export
  * @param {*} [options={
  *     defaultOnError: (error) => console.error(error),
+ *     throwOnClosing: true
  * }]
  * @returns a fire and forgetter object instance.
  */
@@ -45,9 +48,15 @@ export function fireAndForgetter(
     onError: (error: Error) => void = options.defaultOnError
   ): void {
     if (closing) {
-      throw new ClosingError(
+      const closingError = new ClosingError(
         "Cannot longer execute fire and forget operation as is closing or closed"
       );
+      if (options.throwOnClosing) {
+        throw closingError;
+      } else {
+        onError(closingError);
+        return;
+      }
     }
     counter.incrementCounter();
     func()
