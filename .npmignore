@@ -8,5 +8,4 @@ tslint.json
 codeship-services.yml
 codeship-steps.yml
 env.encrypted
-jest.config.js
 npm-publish.sh
