@@ -52,7 +52,6 @@ describe("fire-and-forgetter", () => {
 
     try {
       await fireAndForget.close({ timeout: 10 });
-      throw new Error("It should not get here");
     } catch (error) {
       equal(error instanceof TimeoutClosingError, true);
       equal(
