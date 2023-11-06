@@ -19,9 +19,7 @@ describe("fire-and-forgetter", () => {
       return Promise.resolve();
     }
 
-    async function doSomeStuffsAndIncrementCountAtTheEndAndReject(): Promise<
-      void
-    > {
+    async function doSomeStuffsAndIncrementCountAtTheEndAndReject(): Promise<void> {
       await setTimeout(10);
       count++;
       return Promise.reject(new Error("ups, some error happened"));
@@ -39,7 +37,7 @@ describe("fire-and-forgetter", () => {
 
   test("close should throw a timeout closing error if timeout is reached and fire and forget operation are still in process", async () => {
     const fireAndForget = fireAndForgetter();
-
+    let functionHasThrownError = false;
     let count = 0;
 
     async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
@@ -62,7 +60,9 @@ describe("fire-and-forgetter", () => {
         "Cannot close after 10ms, 3 fire and forget operations are still in progress"
       );
       equal(count, 0);
+      functionHasThrownError = true;
     }
+    equal(functionHasThrownError, true);
   });
 
   test("close should resolve when no fire and forget operations are in process", async () => {
@@ -71,8 +71,8 @@ describe("fire-and-forgetter", () => {
   });
 
   test("fireAndForget should call onError callback when operation rejects", async () => {
+    let onErrorHasBeenCalled = false;
     const fireAndForget = fireAndForgetter();
-
     async function doSomeStuffsAndReject(): Promise<void> {
       await setTimeout(10);
       return Promise.reject(new Error("ups, some error happened"));
@@ -80,21 +80,25 @@ describe("fire-and-forgetter", () => {
 
     fireAndForget(
       () => doSomeStuffsAndReject(),
-      error => {
+      (error) => {
         equal(error instanceof Error, true);
         equal((error as Error).message, "ups, some error happened");
+        onErrorHasBeenCalled = true;
       }
     );
 
     await fireAndForget.close();
+    equal(onErrorHasBeenCalled, true);
   });
 
   test("fireAndForget should call defaultOnError callback when operation rejects and no onError callback is set", async () => {
+    let defaultOnErrorHasBeenCalled = false;
     const fireAndForget = fireAndForgetter({
-      defaultOnError: error => {
+      defaultOnError: (error) => {
         equal(error instanceof Error, true);
         equal(error.message, "ups, some error happened");
-      }
+        defaultOnErrorHasBeenCalled = true;
+      },
     });
 
     async function doSomeStuffsAndReject(): Promise<void> {
@@ -105,9 +109,12 @@ describe("fire-and-forgetter", () => {
     fireAndForget(() => doSomeStuffsAndReject());
 
     await fireAndForget.close();
+
+    equal(defaultOnErrorHasBeenCalled, true);
   });
 
   test("fireAndForget should throw a closing error if fire and forget has been closed", async () => {
+    let functionHasThrownError = false;
     const fireAndForget = fireAndForgetter();
 
     async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
@@ -121,13 +128,15 @@ describe("fire-and-forgetter", () => {
 
     try {
       fireAndForget(() => doSomeStuffsAndIncrementCountAtTheEnd());
-      throw new Error("It should not get here");
     } catch (error) {
       equal(error instanceof ClosingError, true);
       equal(
         (error as Error).message,
         "Cannot longer execute fire and forget operation as is closing or closed"
       );
+      functionHasThrownError = true;
     }
+
+    equal(functionHasThrownError, true);
   });
 });
