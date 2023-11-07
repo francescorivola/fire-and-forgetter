@@ -2,10 +2,12 @@ import { createCounter } from "./counter";
 import ClosingError from "./errors/closing-error";
 import TimeoutClosingError from "./errors/timeout-closing-error";
 
-type Options = {
+type InternalOptions = {
   defaultOnError: (error: Error) => void;
   throwOnClosing: boolean;
 };
+
+type Options = Partial<InternalOptions>;
 
 type FireAndForgetter = {
   close: (options?: CloseOptions) => Promise<void>;
@@ -15,7 +17,7 @@ type CloseOptions = {
   timeout: number;
 };
 
-const defaultOptions: Options = {
+const defaultOptions: InternalOptions = {
   defaultOnError: (error) => console.error(error),
   throwOnClosing: true,
 };
@@ -30,11 +32,11 @@ const defaultOptions: Options = {
  * }]
  * @returns a fire and forgetter object instance.
  */
-export function fireAndForgetter(
-  options: Options = defaultOptions
-): FireAndForgetter {
+export function fireAndForgetter(options?: Options): FireAndForgetter {
   const counter = createCounter();
   let closing = false;
+
+  const { defaultOnError, throwOnClosing } = { ...defaultOptions, ...options };
 
   /**
    * Execute a function in fire and forget mode.
@@ -45,13 +47,13 @@ export function fireAndForgetter(
    */
   function fireAndForget(
     func: () => Promise<void>,
-    onError: (error: Error) => void = options.defaultOnError
+    onError: (error: Error) => void = defaultOnError
   ): void {
     if (closing) {
       const closingError = new ClosingError(
         "Cannot longer execute fire and forget operation as is closing or closed"
       );
-      if (options.throwOnClosing) {
+      if (throwOnClosing) {
         throw closingError;
       } else {
         onError(closingError);
@@ -67,7 +69,7 @@ export function fireAndForgetter(
   /**
    * close the fire and forgetter instance.
    * The function will return a promise that will resolve once all fire and forget operations are done.
-   * Also, any new fire and forget function requested will throw a ClosingError.
+   * Also, any new fire and forget function requested will throw a ClosingError when throwOnClosing is set to true.
    *
    * @param {{ timeout: number }} [closeOptions={ timeout: 0 }] if timeout is > 0 the function
    * will throw a TimeoutClosingError if fire and forget operations do not complete before the set timeout.
