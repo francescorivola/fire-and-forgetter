@@ -53,10 +53,21 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
       handleClosing(onError);
       return;
     }
-    counter.incrementCounter();
-    func()
-      .catch(onError)
-      .finally(() => counter.decrementCounter());
+    void fire(func, onError);
+  }
+
+  async function fire(
+    func: () => Promise<void>,
+    onError: (error) => void
+  ): Promise<void> {
+    try {
+      counter.incrementCounter();
+      await func();
+    } catch (error) {
+      onError(error);
+    } finally {
+      counter.decrementCounter();
+    }
   }
 
   function handleClosing(onError: (error) => void) {
