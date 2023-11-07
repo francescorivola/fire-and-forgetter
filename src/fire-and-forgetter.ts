@@ -3,7 +3,7 @@ import ClosingError from "./errors/closing-error";
 import TimeoutClosingError from "./errors/timeout-closing-error";
 
 type InternalOptions = {
-  defaultOnError: (error: Error) => void;
+  defaultOnError: (error) => void;
   throwOnClosing: boolean;
 };
 
@@ -11,7 +11,7 @@ type Options = Partial<InternalOptions>;
 
 type FireAndForgetter = {
   close: (options?: CloseOptions) => Promise<void>;
-} & ((func: () => Promise<void>, onError?: (error: Error) => void) => void);
+} & ((func: () => Promise<void>, onError?: (error) => void) => void);
 
 type CloseOptions = {
   timeout: number;
@@ -42,28 +42,32 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
    * Execute a function in fire and forget mode.
    *
    * @param {() => Promise<void>} func function executed in fire and forget mode. It must return a promise.
-   * @param {(error: Error) => void} [onError=options.defaultOnError] error callback to handle function rejection.
+   * @param {(error: any) => void} [onError=options.defaultOnError] error callback to handle function rejection.
    * @throws {ClosingError} when close function is called this error will be thrown.
    */
   function fireAndForget(
     func: () => Promise<void>,
-    onError: (error: Error) => void = defaultOnError
+    onError: (error) => void = defaultOnError
   ): void {
     if (closing) {
-      const closingError = new ClosingError(
-        "Cannot longer execute fire and forget operation as is closing or closed"
-      );
-      if (throwOnClosing) {
-        throw closingError;
-      } else {
-        onError(closingError);
-        return;
-      }
+      handleClosing(onError);
+      return;
     }
     counter.incrementCounter();
     func()
       .catch(onError)
       .finally(() => counter.decrementCounter());
+  }
+
+  function handleClosing(onError: (error) => void) {
+    const closingError = new ClosingError(
+      "Cannot longer execute fire and forget operation as is closing or closed"
+    );
+    if (throwOnClosing) {
+      throw closingError;
+    } else {
+      onError(closingError);
+    }
   }
 
   /**
