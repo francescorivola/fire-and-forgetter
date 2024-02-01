@@ -11,7 +11,10 @@ type Options = Partial<InternalOptions>;
 
 type FireAndForgetter = {
   close: (options?: CloseOptions) => Promise<void>;
-} & ((func: () => Promise<void>, onError?: (error) => void) => void);
+} & ((
+  func: (signal: AbortSignal) => Promise<void>,
+  onError?: (error) => void
+) => void);
 
 type CloseOptions = {
   timeout: number;
@@ -33,6 +36,7 @@ const defaultOptions: InternalOptions = {
  * @returns a fire and forgetter object instance.
  */
 export function fireAndForgetter(options?: Options): FireAndForgetter {
+  const controller = new AbortController();
   const counter = createCounter();
   let closing = false;
 
@@ -41,12 +45,12 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
   /**
    * Execute a function in fire and forget mode.
    *
-   * @param {() => Promise<void>} func function executed in fire and forget mode. It must return a promise.
+   * @param {(signal: AbortSignal) => Promise<void>} func function executed in fire and forget mode. It must return a promise.
    * @param {(error: any) => void} [onError=options.defaultOnError] error callback to handle function rejection.
    * @throws {ClosingError} when close function is called this error will be thrown.
    */
   function fireAndForget(
-    func: () => Promise<void>,
+    func: (signal: AbortSignal) => Promise<void>,
     onError: (error) => void = defaultOnError
   ): void {
     if (closing) {
@@ -57,12 +61,12 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
   }
 
   async function fire(
-    func: () => Promise<void>,
+    func: (signal: AbortSignal) => Promise<void>,
     onError: (error) => void
   ): Promise<void> {
     try {
       counter.incrementCounter();
-      await func();
+      await func(controller.signal);
     } catch (error) {
       onError(error);
     } finally {
@@ -94,6 +98,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
    */
   function close(closeOptions: CloseOptions = { timeout: 0 }): Promise<void> {
     closing = true;
+    controller.abort(new Error("FireAndForgetter instance is closing"));
     return new Promise<void>((resolve, reject) => {
       if (counter.getCount() === 0) {
         resolve();

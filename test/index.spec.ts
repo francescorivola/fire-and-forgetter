@@ -3,7 +3,7 @@ import TimeoutClosingError from "../src/errors/timeout-closing-error";
 import fireAndForgetter from "../src/index";
 import { describe, test, mock } from "node:test";
 import { equal } from "assert/strict";
-import { setTimeout } from "timers/promises";
+import { setTimeout as sleep } from "timers/promises";
 
 console.error = mock.fn();
 
@@ -14,13 +14,13 @@ describe("fire-and-forgetter", () => {
     let count = 0;
 
     async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
-      await setTimeout(10);
+      await sleep(10);
       count++;
       return Promise.resolve();
     }
 
     async function doSomeStuffsAndIncrementCountAtTheEndAndReject(): Promise<void> {
-      await setTimeout(10);
+      await sleep(10);
       count++;
       return Promise.reject(new Error("ups, some error happened"));
     }
@@ -35,13 +35,39 @@ describe("fire-and-forgetter", () => {
     equal(count, 4);
   });
 
+  test("close should emit abort signal", async () => {
+    const fireAndForget = fireAndForgetter();
+
+    let finishReason = "not-aborted";
+
+    function doStuffButResolveIfAbort(signal: AbortSignal): Promise<void> {
+      return new Promise<void>((resolve) => {
+        function abort() {
+          finishReason = signal.reason.message;
+          resolve();
+        }
+        signal.addEventListener("abort", abort);
+        setTimeout(() => {
+          signal.removeEventListener("abort", abort);
+          resolve();
+        }, 100);
+      });
+    }
+
+    fireAndForget((signal) => doStuffButResolveIfAbort(signal));
+
+    await fireAndForget.close();
+
+    equal(finishReason, "FireAndForgetter instance is closing");
+  });
+
   test("close should throw a timeout closing error if timeout is reached and fire and forget operation are still in process", async () => {
     const fireAndForget = fireAndForgetter();
     let functionHasThrownError = false;
     let count = 0;
 
     async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
-      await setTimeout(1000);
+      await sleep(1000);
       count++;
       return Promise.resolve();
     }
@@ -73,7 +99,7 @@ describe("fire-and-forgetter", () => {
     let onErrorHasBeenCalled = false;
     const fireAndForget = fireAndForgetter();
     async function doSomeStuffsAndReject(): Promise<void> {
-      await setTimeout(10);
+      await sleep(10);
       return Promise.reject(new Error("ups, some error happened"));
     }
 
@@ -102,7 +128,7 @@ describe("fire-and-forgetter", () => {
     });
 
     async function doSomeStuffsAndReject(): Promise<void> {
-      await setTimeout(10);
+      await sleep(10);
       return Promise.reject(new Error("ups, some error happened"));
     }
 
@@ -118,7 +144,7 @@ describe("fire-and-forgetter", () => {
     const fireAndForget = fireAndForgetter();
 
     async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
-      await setTimeout(100);
+      await sleep(100);
       return Promise.resolve();
     }
 
@@ -150,7 +176,7 @@ describe("fire-and-forgetter", () => {
     });
 
     async function doSomeStuffsAndIncrementCountAtTheEnd(): Promise<void> {
-      await setTimeout(100);
+      await sleep(100);
       return Promise.resolve();
     }
 
