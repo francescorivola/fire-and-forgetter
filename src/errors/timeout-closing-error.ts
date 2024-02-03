@@ -1,3 +1,3 @@
-export default class TimeoutClosingError extends Error {
-    public name = "TimeoutClosingError";
+export class TimeoutClosingError extends Error {
+  public name = "TimeoutClosingError";
 }

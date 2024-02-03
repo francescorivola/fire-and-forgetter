@@ -1,3 +1,3 @@
-export default class ClosingError extends Error {
-   public name = "ClosingError";
+export class ClosingError extends Error {
+  public name = "ClosingError";
 }

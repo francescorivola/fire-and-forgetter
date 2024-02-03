@@ -1,3 +1,3 @@
-export default class AbortError extends Error {
+export class AbortError extends Error {
   public name = "AbortError";
 }
