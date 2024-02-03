@@ -1,4 +1,5 @@
 import { createCounter } from "./counter";
+import AbortError from "./errors/abort-error";
 import ClosingError from "./errors/closing-error";
 import TimeoutClosingError from "./errors/timeout-closing-error";
 
@@ -47,7 +48,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
    *
    * @param {(signal: AbortSignal) => Promise<void>} func function executed in fire and forget mode. It must return a promise.
    * @param {(error: any) => void} [onError=options.defaultOnError] error callback to handle function rejection.
-   * @throws {ClosingError} when close function is called this error will be thrown.
+   * @throws {ClosingError} when close function is called this error will be thrown and throwOnClosing option is set to true.
    */
   function fireAndForget(
     func: (signal: AbortSignal) => Promise<void>,
@@ -98,7 +99,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
    */
   function close(closeOptions: CloseOptions = { timeout: 0 }): Promise<void> {
     closing = true;
-    controller.abort(new Error("FireAndForgetter instance is closing"));
+    controller.abort(new AbortError("FireAndForgetter instance is closing"));
     return new Promise<void>((resolve, reject) => {
       if (counter.getCount() === 0) {
         resolve();

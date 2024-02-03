@@ -4,6 +4,8 @@ import fireAndForgetter from "../src/index";
 import { describe, test, mock } from "node:test";
 import { equal } from "assert/strict";
 import { setTimeout as sleep } from "timers/promises";
+import AbortError from "../src/errors/abort-error";
+import { notEqual } from "assert";
 
 console.error = mock.fn();
 
@@ -38,12 +40,13 @@ describe("fire-and-forgetter", () => {
   test("close should emit abort signal", async () => {
     const fireAndForget = fireAndForgetter();
 
-    let finishReason = "not-aborted";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let abortError: any = null;
 
     function doStuffButResolveIfAbort(signal: AbortSignal): Promise<void> {
       return new Promise<void>((resolve) => {
         function abort() {
-          finishReason = signal.reason.message;
+          abortError = signal.reason;
           resolve();
         }
         signal.addEventListener("abort", abort);
@@ -58,7 +61,9 @@ describe("fire-and-forgetter", () => {
 
     await fireAndForget.close();
 
-    equal(finishReason, "FireAndForgetter instance is closing");
+    notEqual(abortError, null);
+    equal(abortError instanceof AbortError, true);
+    equal(abortError?.message, "FireAndForgetter instance is closing");
   });
 
   test("close should throw a timeout closing error if timeout is reached and fire and forget operation are still in process", async () => {
