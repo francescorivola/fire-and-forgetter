@@ -1,7 +1,7 @@
-import { createCounter } from "./counter";
-import { AbortError } from "./errors/abort-error";
-import { ClosingError } from "./errors/closing-error";
-import { TimeoutClosingError } from "./errors/timeout-closing-error";
+import { createCounter } from "./counter.js";
+import { AbortError } from "./errors/abort-error.js";
+import { ClosingError } from "./errors/closing-error.js";
+import { TimeoutClosingError } from "./errors/timeout-closing-error.js";
 
 type InternalOptions = {
   defaultOnError: (error) => void;
@@ -14,7 +14,7 @@ export type FireAndForgetter = {
   close: (options?: CloseOptions) => Promise<void>;
 } & ((
   func: (signal: AbortSignal) => Promise<void>,
-  onError?: (error) => void,
+  onError?: (error) => void
 ) => void);
 
 type CloseOptions = {
@@ -52,7 +52,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
    */
   function fireAndForget(
     func: (signal: AbortSignal) => Promise<void>,
-    onError: (error) => void = defaultOnError,
+    onError: (error) => void = defaultOnError
   ): void {
     if (closing) {
       handleClosing(onError);
@@ -63,7 +63,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
 
   async function fire(
     func: (signal: AbortSignal) => Promise<void>,
-    onError: (error) => void,
+    onError: (error) => void
   ): Promise<void> {
     try {
       counter.incrementCounter();
@@ -77,7 +77,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
 
   function handleClosing(onError: (error) => void) {
     const closingError = new ClosingError(
-      "Cannot longer execute fire and forget operation as is closing or closed",
+      "Cannot longer execute fire and forget operation as is closing or closed"
     );
     if (throwOnClosing) {
       throw closingError;
@@ -116,10 +116,10 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
           () =>
             reject(
               new TimeoutClosingError(
-                `Cannot close after ${timeout}ms, ${counter.getCount()} fire and forget operations are still in progress`,
-              ),
+                `Cannot close after ${timeout}ms, ${counter.getCount()} fire and forget operations are still in progress`
+              )
             ),
-          timeout,
+          timeout
         );
       }
     });

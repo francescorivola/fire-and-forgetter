@@ -1,7 +1,4 @@
-export {
-  fireAndForgetter as default,
-  FireAndForgetter,
-} from "./fire-and-forgetter";
-export * from "./errors/abort-error";
-export * from "./errors/closing-error";
-export * from "./errors/timeout-closing-error";
+export * from "./fire-and-forgetter.js";
+export * from "./errors/abort-error.js";
+export * from "./errors/closing-error.js";
+export * from "./errors/timeout-closing-error.js";
