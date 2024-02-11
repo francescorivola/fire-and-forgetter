@@ -8,7 +8,7 @@
     "test-ci": "c8 node --loader ts-node/esm --test test/*.spec.ts",
     "format": "prettier --check **/*.ts",
     "lint": "eslint . --ext .ts",
-    "prepare": "tshy"
+    "build": "tshy"
   },
   "files": [
     "dist"
