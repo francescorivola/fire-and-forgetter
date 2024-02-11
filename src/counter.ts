@@ -4,8 +4,7 @@ type Counter = {
   incrementCounter: () => void;
   decrementCounter: () => void;
   getCount: () => number;
-  addCounterUpdateEventListener(callback: (count: number) => void): void;
-  removeAllCounterUpdateEventListener(): void;
+  registerSubscriberToCounterChanges(callback: (count: number) => void): void;
 };
 
 export function createCounter(): Counter {
@@ -24,11 +23,10 @@ export function createCounter(): Counter {
     getCount(): number {
       return count;
     },
-    addCounterUpdateEventListener(callback: (count: number) => void): void {
+    registerSubscriberToCounterChanges(
+      callback: (count: number) => void,
+    ): void {
       eventEmitter.on("counterUpdate", callback);
-    },
-    removeAllCounterUpdateEventListener(): void {
-      eventEmitter.removeAllListeners("counterUpdate");
     },
   };
 }

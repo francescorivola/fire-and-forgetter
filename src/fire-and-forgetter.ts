@@ -105,22 +105,22 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
         resolve();
         return;
       }
-      counter.addCounterUpdateEventListener((count) => {
+      counter.registerSubscriberToCounterChanges((count) => {
         if (count === 0) {
-          counter.removeAllCounterUpdateEventListener();
           resolve();
         }
       });
       const { timeout } = closeOptions;
       if (timeout > 0) {
-        setTimeout(() => {
-          counter.removeAllCounterUpdateEventListener();
-          reject(
-            new TimeoutClosingError(
-              `Cannot close after ${timeout}ms, ${counter.getCount()} fire and forget operations are still in progress`
-            )
-          );
-        }, timeout);
+        setTimeout(
+          () =>
+            reject(
+              new TimeoutClosingError(
+                `Cannot close after ${timeout}ms, ${counter.getCount()} fire and forget operations are still in progress`
+              )
+            ),
+          timeout
+        );
       }
     });
   }
