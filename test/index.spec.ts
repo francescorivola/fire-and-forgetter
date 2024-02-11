@@ -89,7 +89,7 @@ describe("fire-and-forgetter", () => {
       equal(error instanceof TimeoutClosingError, true);
       equal(
         (error as Error).message,
-        "Cannot close after 10ms, 3 fire and forget operations are still in progress"
+        "Cannot close after 10ms, 3 fire and forget operations are still in progress",
       );
       equal(count, 0);
       functionHasThrownError = true;
@@ -116,7 +116,7 @@ describe("fire-and-forgetter", () => {
         equal(error instanceof Error, true);
         equal((error as Error).message, "ups, some error happened");
         onErrorHasBeenCalled = true;
-      }
+      },
     );
 
     await fireAndForget.close();
@@ -165,7 +165,7 @@ describe("fire-and-forgetter", () => {
       equal(error instanceof ClosingError, true);
       equal(
         (error as Error).message,
-        "Cannot longer execute fire and forget operation as is closing or closed"
+        "Cannot longer execute fire and forget operation as is closing or closed",
       );
       functionHasThrownError = true;
     }
@@ -196,7 +196,7 @@ describe("fire-and-forgetter", () => {
     equal(reportedError instanceof ClosingError, true);
     equal(
       (reportedError as Error).message,
-      "Cannot longer execute fire and forget operation as is closing or closed"
+      "Cannot longer execute fire and forget operation as is closing or closed",
     );
   });
 });

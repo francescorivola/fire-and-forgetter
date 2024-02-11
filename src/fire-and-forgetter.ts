@@ -16,7 +16,7 @@ export type FireAndForgetter = {
 } & ((
   func: (signal: AbortSignal) => Promise<void>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onError?: (error: any) => void
+  onError?: (error: any) => void,
 ) => void);
 
 type CloseOptions = {
@@ -54,7 +54,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
    */
   function fireAndForget(
     func: (signal: AbortSignal) => Promise<void>,
-    onError: (error) => void = defaultOnError
+    onError: (error) => void = defaultOnError,
   ): void {
     if (closing) {
       handleClosing(onError);
@@ -65,7 +65,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
 
   async function fire(
     func: (signal: AbortSignal) => Promise<void>,
-    onError: (error) => void
+    onError: (error) => void,
   ): Promise<void> {
     try {
       counter.incrementCounter();
@@ -79,7 +79,7 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
 
   function handleClosing(onError: (error) => void) {
     const closingError = new ClosingError(
-      "Cannot longer execute fire and forget operation as is closing or closed"
+      "Cannot longer execute fire and forget operation as is closing or closed",
     );
     if (throwOnClosing) {
       throw closingError;
@@ -118,10 +118,10 @@ export function fireAndForgetter(options?: Options): FireAndForgetter {
           () =>
             reject(
               new TimeoutClosingError(
-                `Cannot close after ${timeout}ms, ${counter.getCount()} fire and forget operations are still in progress`
-              )
+                `Cannot close after ${timeout}ms, ${counter.getCount()} fire and forget operations are still in progress`,
+              ),
             ),
-          timeout
+          timeout,
         );
       }
     });
