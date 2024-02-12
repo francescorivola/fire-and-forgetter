@@ -5,7 +5,3 @@ coverage/
 tsconfig.json
 tslint.json
 .gitignore
-codeship-services.yml
-codeship-steps.yml
-env.encrypted
-npm-publish.sh

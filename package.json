@@ -2,15 +2,17 @@
   "name": "fire-and-forgetter",
   "version": "3.2.1",
   "description": "A simple lib to handle fire and forget operations.",
-  "main": "build/index.js",
+  "main": "./dist/commonjs/index.js",
   "scripts": {
-    "test": "node --require ts-node/register --test --watch test/*.spec.ts",
-    "test-ci": "c8 node --require ts-node/register --test test/*.spec.ts",
-    "build": "tsc -p tsconfig.json",
-    "build-watch": "tsc -p tsconfig.json --watch",
+    "test": "node --loader ts-node/esm --test --watch test/*.spec.ts",
+    "test-ci": "c8 node --loader ts-node/esm --test test/*.spec.ts",
     "format": "prettier --check **/*.ts",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "build": "tshy"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/francescorivola/fire-and-forgetter.git"
@@ -22,6 +24,7 @@
   "engines": {
     "node": ">=18"
   },
+  "type": "module",
   "author": "francescorivola",
   "license": "MIT",
   "homepage": "https://github.com/francescorivola/fire-and-forgetter#readme",
@@ -33,6 +36,27 @@
     "eslint": "^8.53.0",
     "prettier": "^3.2.4",
     "ts-node": "^10.9.1",
+    "tshy": "^1.11.0",
     "typescript": "^5.2.2"
-  }
+  },
+  "tshy": {
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
+    }
+  },
+  "types": "./dist/commonjs/index.d.ts"
 }

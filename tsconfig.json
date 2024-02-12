@@ -1,15 +1,18 @@
 {
   "include": ["./src/**/*.ts"],
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2020",
+    "module": "ESNext",
+    "target": "es2022",
     "noImplicitAny": false,
     "declaration": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "outDir": "build",
-    "lib": ["es2020"],
+    "lib": ["es2022"],
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "strict": true
-  }
+  },
+  "ts-node": {
+    "experimentalSpecifierResolution": "node"
+  },
 }

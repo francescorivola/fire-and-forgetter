@@ -1,10 +1,11 @@
-import { createCounter } from "./counter";
-import { AbortError } from "./errors/abort-error";
-import { ClosingError } from "./errors/closing-error";
-import { TimeoutClosingError } from "./errors/timeout-closing-error";
+import { createCounter } from "./counter.js";
+import { AbortError } from "./errors/abort-error.js";
+import { ClosingError } from "./errors/closing-error.js";
+import { TimeoutClosingError } from "./errors/timeout-closing-error.js";
 
 type InternalOptions = {
-  defaultOnError: (error) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  defaultOnError: (error: any) => void;
   throwOnClosing: boolean;
 };
 
@@ -14,7 +15,8 @@ export type FireAndForgetter = {
   close: (options?: CloseOptions) => Promise<void>;
 } & ((
   func: (signal: AbortSignal) => Promise<void>,
-  onError?: (error) => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onError?: (error: any) => void,
 ) => void);
 
 type CloseOptions = {

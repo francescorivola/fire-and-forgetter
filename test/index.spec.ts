@@ -2,7 +2,8 @@ import { describe, test, mock } from "node:test";
 import { equal } from "assert/strict";
 import { setTimeout as sleep } from "timers/promises";
 import { notEqual } from "assert";
-import fireAndForgetter, {
+import {
+  fireAndForgetter,
   ClosingError,
   TimeoutClosingError,
   AbortError,
